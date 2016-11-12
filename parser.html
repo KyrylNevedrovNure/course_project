@@ -1,0 +1,567 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <base target="_top">
+    <link href="https://ssl.gstatic.com/docs/script/css/add-ons.css" rel="stylesheet">
+    <!-- Latest compiled and minified CSS -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
+    <!-- Optional theme -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap-theme.min.css" integrity="sha384-fLW2N01lMqjakBkx3l/M9EahuwpSfeNvV63J5ezn3uZzapT0u7EYsXMjQV+0En5r" crossorigin="anonymous">
+    <!-- Основные стили -->
+    <style>
+     .glyphicon-ok-sign {
+      color: #00e600;
+    }
+    .glyphicon-remove-sign {
+      color: #ff0000;
+    }
+    </style>
+  </head>
+  <body>
+  
+  
+    <button id="start" type="button" class="btn btn-success btn-block">Запустить проверку</button>
+ 
+    <span class="text-center">Язык документа:</span>
+     <div class="btn-group" data-toggle="buttons">
+       <label class="btn btn-primary  active">
+        <input type="radio" name="option" id="option_lang_ru" autocomplete="off" checked> Русский
+       </label>
+       <label class="btn btn-primary">
+        <input type="radio" name="option" id="option_lang_ua" autocomplete="off"> Українська
+       </label>
+       <label class="btn btn-primary">
+        <input type="radio" name="option" id="option_lang_en" autocomplete="off"> English
+       </label>
+    </div>
+    <br>
+    
+   
+    <div class="btn-group" data-toggle="buttons">
+       Количестов авторов:<br> 
+      <label class="btn btn-primary active">
+      <input type="radio" name="options" id="option1" autocomplete="off" checked> 1 автор
+      </label>
+      <label class="btn btn-primary">
+      <input type="radio" name="options" id="option2" autocomplete="off"> 2 автора
+      </label>
+    </div>
+    <br>
+    <br>
+    
+   Структура:
+    <div id="structure">
+      <ul>
+        <li id="titul">Титульный лист(укр)</li>
+        <li id="task">Задание на курсовой проект(укр)</li>
+        <li id="ref">Реферат</li>
+        <li id="content">Введение</li>
+        <li id="main_part">Основные разделы</li>
+        <li id="conclusion">Выводы</li>
+        <li id="link">Список использованных источников</li>
+      </ul>
+    </div>
+    
+    ДСТУ:
+    <div id="dstu">
+    </div>
+    <table class="table table-bordered">
+      <thead>
+       <tr>
+        <td > </td>
+        <td >Док.</td>
+        <td >Реф.</td>
+        <td >ДСТУ</td>
+        <td ><span class="glyphicon glyphicon-ok-sign" aria-hidden="true"></span></td>
+       </tr>
+      </thead>
+      <tbody>
+      <tr>
+        <td class="info">Рис.</td>
+        <td id="pic" class="active"></td>
+        <td id="pic_ref" class="active"></td>
+        <td id="pic_dstu" class="active"></td>
+        <td id="pic_status" class="active"></td>
+      </tr>
+      <tr>
+        <td class="info">Табл.</td>
+        <td  id="table" class="active"></td>
+        <td id="table_ref" class="active"></td>
+        <td id="table_dstu" class="active"></td>
+        <td id="table_status" class="active"></td>
+      </tr>
+      <tr>
+        <td class="info">Ссыл.</td>
+        <td id="links" class="active"></td>
+        <td id="links_ref" class="active"></td>
+        <td id="links_dstu" class="active"></td>
+        <td id="links_status" class="active"></td>
+      </tr>
+      </tbody>
+    </table>
+    
+   
+    <div>
+     <span>Объем:</span> 
+     <div id="pages"></div>
+    </div>
+    
+    
+    <!-- Загрузка jQuery -->
+    <script src="//ajax.googleapis.com/ajax/libs/jquery/1.10.1/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js" integrity="sha384-0mSbJDEHialfmuBBQP6A4Qrprq5OVfW37PRR3j5ELqxss1yVqOtnepnHVP9aJ7xS" crossorigin="anonymous"></script> 
+    <script>
+      // запуск основых функциий из code.gs при нажатии кнопки "проверить"
+      $(function() {
+        
+         $('#start').click(function() {
+          google.script.run.withSuccessHandler(getPlainText)
+               .getPlainText();
+           google.script.run.withSuccessHandler(onSuccess)
+               .getAmountOfImages();
+           google.script.run.withSuccessHandler(amountOfTables)
+               .getAmountOfTables();
+           google.script.run.withSuccessHandler(amountOfPages)
+               .getNumPages(); 
+        });
+        
+      });
+    </script>
+    <script>
+      //функция подсчета рисунков
+      function onSuccess(num) {
+        $('#pic').html( num );
+        if(($('#pic').html() == $('#pic_ref').html()) &&  ($('#pic_ref').html() == $('#pic_dstu').html()))
+         {
+          $('#pic_status').html( '<span class="glyphicon glyphicon-ok-sign" aria-hidden="true"></span>' );
+          }
+          else
+           {
+          $('#pic_status').html( '<span class="glyphicon glyphicon-remove-sign" aria-hidden="true"></span>' );
+          }
+      }
+      //функция подсчета таблиц
+       function amountOfTables(num) {
+       
+        $('#table').html( num );
+        if(($('#table').html() == $('#table_ref').html()) &&  ($('#table_ref').html() == $('#table_dstu').html()))
+         {
+          $('#table_status').html( '<span class="glyphicon glyphicon-ok-sign" aria-hidden="true"></span>' );
+          }
+          else
+           {
+          $('#table_status').html( '<span class="glyphicon glyphicon-remove-sign" aria-hidden="true"></span>' );
+          }
+      }
+      
+      
+      
+      //функция подсчета объема курсового
+       function amountOfPages(num) {
+        if($('#option1').is(':checked')){ 
+          var etalon = 45; 
+        }
+        else {
+          var etalon = 70; 
+        }
+        if ( num > etalon )
+        {
+          var temp = '<span class="glyphicon glyphicon-ok-sign" aria-hidden="true"></span>'
+        }
+        else
+        {
+           var temp = '<span class="glyphicon glyphicon-remove-sign" aria-hidden="true"></span>'
+        }
+      
+        $('#pages').html(' ' + num + 'ст.' + temp );
+        alert("Проверка закончена");
+      }
+      
+      //Функция получения всего текста проекта и последующий его парсинг на наличие рисунков, таблиц, ссылок
+       function getPlainText(text) {
+          if($('#option_lang_ru').is(':checked'))
+          {
+          var re = /Рисунок \d+\.\d+/g;
+          var count = 0;
+          while (m = re.exec(text)) {
+            count++;
+          }
+          $('#pic_dstu').html(count); 
+          
+          re = /Таблица \d+\.\d+/g;
+          count = 0;
+          while (m = re.exec(text)) {
+            count++;
+          }
+          $('#table_dstu').html(count); 
+          
+          re = /\d+\. .+\./g;
+          count = 0;
+          while (m = re.exec(text)) {
+          //alert(m);
+            count++;
+          }
+          $('#links_dstu').html(count); 
+          
+          re = /\d+ рисунк/;
+          var re2 = /\d+/;
+          m = re.exec(text);
+          d = re2.exec(m);
+        
+          $('#pic_ref').html(d);
+          
+          re = /\d+ таблиц/;
+          m = re.exec(text);
+          d = re2.exec(m);
+        
+          $('#table_ref').html(d)
+          
+          re = /\d+ источник/;
+          m = re.exec(text);
+          d = re2.exec(m);
+        
+          $('#links_ref').html(d)
+          
+          $('#links').html("-");
+          
+          if($('#links_ref').html() == $('#links_dstu').html())
+         {
+          $('#links_status').html( '<span class="glyphicon glyphicon-ok-sign" aria-hidden="true"></span>' );
+          }
+          else
+           {
+          $('#links_status').html( '<span class="glyphicon glyphicon-remove-sign" aria-hidden="true"></span>' );
+          }
+        //Парсинг на наличие основных составляющих проекта
+        if (text.search(/Харківський національний університет радіоелектроніки/ ) != -1)
+        {
+          var temp = '<span class="glyphicon glyphicon-ok-sign" aria-hidden="true"></span>'
+        }
+        else
+        {
+           var temp = '<span class="glyphicon glyphicon-remove-sign" aria-hidden="true"></span>'
+        }
+        $('#titul').html("Титульный лист(укр) " + temp);
+        
+        if (text.search(/Завдання на курсовий проект/i ) != -1)
+        {
+          var temp = '<span class="glyphicon glyphicon-ok-sign" aria-hidden="true"></span>'
+        }
+        else
+        {
+           var temp = '<span class="glyphicon glyphicon-remove-sign" aria-hidden="true"></span>'
+        }
+        $('#task').html("Задание на курсовой проект(укр) " + temp);
+        
+        if (text.search(/СПИСОК ИСПОЛЬЗОВАННЫХ ИСТОЧНИКОВ/ ) != -1)
+        {
+          var temp = '<span class="glyphicon glyphicon-ok-sign" aria-hidden="true"></span>'
+        }
+        else
+        {
+           var temp = '<span class="glyphicon glyphicon-remove-sign" aria-hidden="true"></span>'
+        }
+        $('#link').html("Список использованных источников" + temp);
+        
+        if (text.search(/РЕФЕРАТ/ ) != -1)
+        {
+          var temp = '<span class="glyphicon glyphicon-ok-sign" aria-hidden="true"></span>'
+        }
+        else
+        {
+           var temp = '<span class="glyphicon glyphicon-remove-sign" aria-hidden="true"></span>'
+        }
+        $('#ref').html("Реферат" + temp);
+        
+        if (text.search(/ВВЕДЕНИЕ/ ) != -1)
+        {
+          var temp = '<span class="glyphicon glyphicon-ok-sign" aria-hidden="true"></span>'
+        }
+        else
+        {
+           var temp = '<span class="glyphicon glyphicon-remove-sign" aria-hidden="true"></span>'
+        }
+        $('#content').html("Введение " + temp);
+        
+        if (text.search(/1 / ) != -1)
+        {
+          var temp = '<span class="glyphicon glyphicon-ok-sign" aria-hidden="true"></span>'
+        }
+        else
+        {
+           var temp = '<span class="glyphicon glyphicon-remove-sign" aria-hidden="true"></span>'
+        }
+        $('#main_part').html("Основые разделы" + temp);
+        
+        if (text.search(/ВЫВОДЫ/ ) != -1)
+        {
+          var temp = '<span class="glyphicon glyphicon-ok-sign" aria-hidden="true"></span>'
+        }
+        else
+        {
+           var temp = '<span class="glyphicon glyphicon-remove-sign" aria-hidden="true"></span>'
+        }
+        $('#conclusion').html("Выводы " + temp);
+        
+          
+          } else if($('#option_lang_ua').is(':checked'))
+          {
+             var re = /Рисунок \d+\.\d+/g;
+          var count = 0;
+          while (m = re.exec(text)) {
+            count++;
+          }
+          $('#pic_dstu').html(count); 
+          
+          re = /Таблиця \d+\.\d+/g;
+          count = 0;
+          while (m = re.exec(text)) {
+            count++;
+          }
+          $('#table_dstu').html(count); 
+          
+          re = /\d+\. .+\./g;
+          count = 0;
+          while (m = re.exec(text)) {
+          //alert(m);
+            count++;
+          }
+          $('#links_dstu').html(count); 
+          
+          re = /\d+ рисунк/;
+          var re2 = /\d+/;
+          m = re.exec(text);
+          d = re2.exec(m);
+        
+          $('#pic_ref').html(d);
+          
+          re = /\d+ таблиц/;
+          m = re.exec(text);
+          d = re2.exec(m);
+        
+          $('#table_ref').html(d)
+          
+          re = /\d+ джерел/;
+          m = re.exec(text);
+          d = re2.exec(m);
+        
+          $('#links_ref').html(d)
+          
+          $('#links').html("-");
+          
+          if($('#links_ref').html() == $('#links_dstu').html())
+         {
+          $('#links_status').html( '<span class="glyphicon glyphicon-ok-sign" aria-hidden="true"></span>' );
+          }
+          else
+           {
+          $('#links_status').html( '<span class="glyphicon glyphicon-remove-sign" aria-hidden="true"></span>' );
+          }
+          
+        //Парсинг на наличие основных составляющих проекта
+        if (text.search(/Харківський національний університет радіоелектроніки/i ) != -1)
+        {
+          var temp = '<span class="glyphicon glyphicon-ok-sign" aria-hidden="true"></span>'
+        }
+        else
+        {
+           var temp = '<span class="glyphicon glyphicon-remove-sign" aria-hidden="true"></span>'
+        }
+        $('#titul').html("Титульный лист(укр) " + temp);
+        
+        if (text.search(/Завдання на курсовой проект/i ) != -1)
+        {
+          var temp = '<span class="glyphicon glyphicon-ok-sign" aria-hidden="true"></span>'
+        }
+        else
+        {
+           var temp = '<span class="glyphicon glyphicon-remove-sign" aria-hidden="true"></span>'
+        }
+        $('#task').html("Задание на курсовой проект(укр) " + temp);
+        
+        if (text.search(/ВИКОРИСТАНІ ДЖЕРЕЛА/ ) != -1)
+        {
+          var temp = '<span class="glyphicon glyphicon-ok-sign" aria-hidden="true"></span>'
+        }
+        else
+        {
+           var temp = '<span class="glyphicon glyphicon-remove-sign" aria-hidden="true"></span>'
+        }
+        $('#link').html("Список использованных источников" + temp);
+        
+        if (text.search(/РЕФЕРАТ/ ) != -1)
+        {
+          var temp = '<span class="glyphicon glyphicon-ok-sign" aria-hidden="true"></span>'
+        }
+        else
+        {
+           var temp = '<span class="glyphicon glyphicon-remove-sign" aria-hidden="true"></span>'
+        }
+        $('#ref').html("Реферат" + temp);
+        
+        if (text.search(/ВСТУП/ ) != -1)
+        {
+          var temp = '<span class="glyphicon glyphicon-ok-sign" aria-hidden="true"></span>'
+        }
+        else
+        {
+           var temp = '<span class="glyphicon glyphicon-remove-sign" aria-hidden="true"></span>'
+        }
+        $('#content').html("Введение " + temp);
+        
+        if (text.search(/1 / ) != -1)
+        {
+          var temp = '<span class="glyphicon glyphicon-ok-sign" aria-hidden="true"></span>'
+        }
+        else
+        {
+           var temp = '<span class="glyphicon glyphicon-remove-sign" aria-hidden="true"></span>'
+        }
+        $('#main_part').html("Основые разделы" + temp);
+        
+        if (text.search(/ВИСНОВКИ/ ) != -1)
+        {
+          var temp = '<span class="glyphicon glyphicon-ok-sign" aria-hidden="true"></span>'
+        }
+        else
+        {
+           var temp = '<span class="glyphicon glyphicon-remove-sign" aria-hidden="true"></span>'
+        }
+        $('#conclusion').html("Выводы " + temp);
+        
+          
+          } else {
+             var re = /Picture \d+\.\d+/g;
+          var count = 0;
+          while (m = re.exec(text)) {
+            count++;
+          }
+          $('#pic_dstu').html(count); 
+          
+          re = /Table \d+\.\d+/g;
+          count = 0;
+          while (m = re.exec(text)) {
+            count++;
+          }
+          $('#table_dstu').html(count); 
+          
+          re = /\d+\. .+\./g;
+          count = 0;
+          while (m = re.exec(text)) {
+          //alert(m);
+            count++;
+          }
+          $('#links_dstu').html(count); 
+          
+          re = /\d+ picture/;
+          var re2 = /\d+/;
+          m = re.exec(text);
+          d = re2.exec(m);
+        
+          $('#pic_ref').html(d);
+          
+          re = /\d+ table/;
+          m = re.exec(text);
+          d = re2.exec(m);
+        
+          $('#table_ref').html(d)
+          
+          re = /\d+ source/;
+          m = re.exec(text);
+          d = re2.exec(m);
+        
+          $('#links_ref').html(d)
+          
+          $('#links').html("-");
+          
+          if($('#links_ref').html() == $('#links_dstu').html())
+         {
+          $('#links_status').html( '<span class="glyphicon glyphicon-ok-sign" aria-hidden="true"></span>' );
+          }
+          else
+           {
+          $('#links_status').html( '<span class="glyphicon glyphicon-remove-sign" aria-hidden="true"></span>' );
+          }
+        //Парсинг на наличие основных составляющих проекта
+        if (text.search(/Харківський національний університет радіоелектроніки/i ) != -1)
+        {
+          var temp = '<span class="glyphicon glyphicon-ok-sign" aria-hidden="true"></span>'
+        }
+        else
+        {
+           var temp = '<span class="glyphicon glyphicon-remove-sign" aria-hidden="true"></span>'
+        }
+        $('#titul').html("Титульный лист(укр) " + temp);
+        
+        if (text.search(/Завдання на курсовий проект/i ) != -1)
+        {
+          var temp = '<span class="glyphicon glyphicon-ok-sign" aria-hidden="true"></span>'
+        }
+        else
+        {
+           var temp = '<span class="glyphicon glyphicon-remove-sign" aria-hidden="true"></span>'
+        }
+        $('#task').html("Задание на курсовой проект(укр) " + temp);
+        
+        if (text.search(/USED SOURCES/ ) != -1)
+        {
+          var temp = '<span class="glyphicon glyphicon-ok-sign" aria-hidden="true"></span>'
+        }
+        else
+        {
+           var temp = '<span class="glyphicon glyphicon-remove-sign" aria-hidden="true"></span>'
+        }
+        $('#link').html("Список использованных источников" + temp);
+        
+        if (text.search(/ESSAY/ ) != -1)
+        {
+          var temp = '<span class="glyphicon glyphicon-ok-sign" aria-hidden="true"></span>'
+        }
+        else
+        {
+           var temp = '<span class="glyphicon glyphicon-remove-sign" aria-hidden="true"></span>'
+        }
+        $('#ref').html("Реферат" + temp);
+        
+        if (text.search(/INTRODUCTION/ ) != -1)
+        {
+          var temp = '<span class="glyphicon glyphicon-ok-sign" aria-hidden="true"></span>'
+        }
+        else
+        {
+           var temp = '<span class="glyphicon glyphicon-remove-sign" aria-hidden="true"></span>'
+        }
+        $('#content').html("Введение " + temp);
+        
+        if (text.search(/1 / ) != -1)
+        {
+          var temp = '<span class="glyphicon glyphicon-ok-sign" aria-hidden="true"></span>'
+        }
+        else
+        {
+           var temp = '<span class="glyphicon glyphicon-remove-sign" aria-hidden="true"></span>'
+        }
+        $('#main_part').html("Основые разделы" + temp);
+        
+        if (text.search(/CONCLUSIONS/ ) != -1)
+        {
+          var temp = '<span class="glyphicon glyphicon-ok-sign" aria-hidden="true"></span>'
+        }
+        else
+        {
+           var temp = '<span class="glyphicon glyphicon-remove-sign" aria-hidden="true"></span>'
+        }
+        $('#conclusion').html("Выводы " + temp);
+        
+          
+          }
+          
+         
+        
+      }
+    </script>
+  </body>
+</html>
+
+
+
